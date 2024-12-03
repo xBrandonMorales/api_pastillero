@@ -19,6 +19,11 @@ class Pastilla(BaseModel):
     hora_toma: str  # Formato HH:MM
     duracion_dias: int
 
+# Modelo para los usuarios
+class Usuario(BaseModel):
+    nombre: str
+    contraseña: str
+
 # Configuración de CORS para permitir acceso desde todos los orígenes
 app.add_middleware(
     CORSMiddleware,
@@ -71,3 +76,37 @@ async def delete_pastilla(nombre: str):
     if result.deleted_count == 1:
         return {"msg": "Pastilla eliminada correctamente."}
     raise HTTPException(status_code=404, detail="Pastilla no encontrada.")
+
+# Rutas para usuarios
+@app.post(
+    "/usuarios/",
+    response_model=Usuario,
+    summary="Agregar un nuevo usuario",
+    description="Agrega un nuevo usuario con nombre y contraseña.",
+)
+async def create_usuario(usuario: Usuario):
+    result = await db.usuarios.insert_one(usuario.dict())
+    if result.inserted_id:
+        return usuario
+    raise HTTPException(status_code=500, detail="Error al agregar el usuario.")
+
+@app.get(
+    "/usuarios/",
+    response_model=List[Usuario],
+    summary="Obtener todos los usuarios",
+    description="Devuelve una lista de todos los usuarios en la base de datos.",
+)
+async def get_usuarios():
+    usuarios = await db.usuarios.find().to_list(None)
+    return usuarios
+
+@app.post(
+    "/usuarios/login/",
+    summary="Autenticar usuario",
+    description="Autentica un usuario con nombre y contraseña.",
+)
+async def autenticar_usuario(usuario: Usuario):
+    usuario_encontrado = await db.usuarios.find_one({"nombre": usuario.nombre, "contraseña": usuario.contraseña})
+    if usuario_encontrado:
+        return {"msg": "Usuario autenticado correctamente."}
+    raise HTTPException(status_code=401, detail="Nombre o contraseña incorrectos.")
