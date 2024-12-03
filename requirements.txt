@@ -1,4 +1,5 @@
 fastapi
-pymongo
-motor
 gunicorn
+uvicorn
+motor  # Si estás usando MongoDB
+pydantic
