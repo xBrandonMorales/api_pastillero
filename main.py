@@ -18,6 +18,7 @@ class Pastilla(BaseModel):
     cantidad: int
     hora_toma: str  # Formato HH:MM
     duracion_dias: int
+    tipo_medicamento: str
 
 # Modelo para los usuarios
 class Usuario(BaseModel):
